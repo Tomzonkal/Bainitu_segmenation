@@ -31,7 +31,7 @@ Instrukcja tworzenia środowiska do projektu **Bainite Segmentation**.
 Aby uruchomić narzędzie **Labelme**, wpisz w terminalu:
 
 ```bash
-labelme --nodata   -O metadata raw_images 
+labelme --nodata -O metadata raw_images 
 ```
 
 W razie problemów z instalacją sprawdź wersję Conda i poprawność pliku `environment.yaml`.
