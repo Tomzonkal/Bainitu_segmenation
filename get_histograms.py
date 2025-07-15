@@ -40,6 +40,5 @@ def get_histograms(segment_dir = "slic_out", bins=256):
 
         histograms.append(hist)
         labels.append(label)
-
-    print(f"Loaded {len(histograms)} samples")
+    print(f"Loaded {len(histograms)} samples, bainite: {labels.count(0)}, martensite: {labels.count(1)} ")
     return histograms, labels

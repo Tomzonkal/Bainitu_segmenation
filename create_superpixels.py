@@ -2,12 +2,16 @@ import cv2
 from skimage.segmentation import slic, mark_boundaries, felzenszwalb
 from skimage.util import img_as_float
 import os
+import shutil
 import numpy as np
 import glob
 
 
 def create_superpixels(segment_dir, output_dir, pixels_per_superpixel=50000, compactness=0.1, min_cluster_size=500):
     segment_files = glob.glob(os.path.join(segment_dir, '*.png'))
+    # clear content od directory
+    if os.path.exists(output_dir) and os.path.isdir(output_dir):
+        shutil.rmtree(output_dir)
     os.makedirs(output_dir, exist_ok=True)
     num_superpixels_counter, full_sample_img_counter = 0, 0
     for seg_path in segment_files:
