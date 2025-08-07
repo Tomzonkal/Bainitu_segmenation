@@ -1,5 +1,4 @@
 import json
-import re
 import cv2
 import numpy as np
 import os
@@ -49,10 +48,6 @@ class LabeledSegmentsCreator:
             data = json.load(f)
         return data
     
-    def _create_path(self, file_name):
-        path= os.path.join(self.output_dataset.image_data_path, self.output_dataset.dataset_name, file_name)
-        return path
-    
     def _save_segment_image(self, base_name, label,iterator,segment):
         """
         Save the extracted segment to the specified path.
@@ -60,7 +55,7 @@ class LabeledSegmentsCreator:
         :param output_path: Path where the segment will be saved.
         """                
         segment_filename = f"{base_name}_{label}_{iterator}.png"
-        segment_path = self._create_path(segment_filename)
+        segment_path = os.path.join(self.output_dataset.image_data_path, segment_filename)
         cv2.imwrite(segment_path, segment)
     
     def _save_segment_metadata(self, base_name, label, iterator, segment):
@@ -78,7 +73,8 @@ class LabeledSegmentsCreator:
             'segment_shape': segment.shape
         }
         metadata_filename = f"{base_name}_{label}_{iterator}.json"
-        metadata_path = self._create_path(metadata_filename)
+        metadata_path = os.path.join(self.output_dataset.image_label_data_path, metadata_filename)
+        
         with open(metadata_path, 'w') as f:
             json.dump(metadata, f, indent=4)
         

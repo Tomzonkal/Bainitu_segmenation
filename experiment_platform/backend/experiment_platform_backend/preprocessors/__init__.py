@@ -1,1 +1,2 @@
-from backend.src.preprocessors.preprocessor import Preprocessor
+from preprocessors.preprocessor import Preprocessor
+from preprocessors.labeled_segments_creator.labaled_segments_creator import LabeledSegmentsCreator

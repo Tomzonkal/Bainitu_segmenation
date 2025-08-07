@@ -1,5 +1,5 @@
 import re
-from experiment_platform_backend.datasets.datasets import Dataset
+from datasets.datasets import Dataset
 import json
 import os
 import glob
@@ -52,7 +52,7 @@ class ImageDataset(Dataset):
         return df
         
         
-    def load_meta_data(self):
+    def load_meta_data(self)-> pd.DataFrame:
         """
         Load metadata from a specified path.
         

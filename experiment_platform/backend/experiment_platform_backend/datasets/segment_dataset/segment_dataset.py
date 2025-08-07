@@ -1,5 +1,5 @@
 import re
-from experiment_platform_backend.datasets.datasets import Dataset
+from datasets.datasets import Dataset
 import json
 import os
 import glob
@@ -22,11 +22,11 @@ class SegmentDataset(Dataset):
         
     
     def _add_json_paths(self, images_paths,df):
-        json_paths = glob.glob(os.path.join(self.image_label_data_path, '*.json'))
+        json_paths = glob.glob(os.path.join(self.image_label_data_path, self.dataset_name, '*.json'))
         df['json_path'] = None
         for image_path in images_paths:
             base_name = os.path.splitext(os.path.basename(image_path))[0]
-            json_path = os.path.join(self.image_label_data_path, base_name + '.json')
+            json_path = os.path.join(self.image_label_data_path,self.dataset_name, base_name + '.json')
             df.loc[df['image_path'] == image_path, 'json_path'] = json_path if json_path in json_paths else None
         return df
             
@@ -51,6 +51,6 @@ class SegmentDataset(Dataset):
         :return: DataFrame containing image paths and metadata.
         """
         # Find all TIF files in image_data_path
-        images_paths = glob.glob(os.path.join(self.image_data_path, '*.tif'))
+        images_paths = glob.glob(os.path.join(self.image_data_path,self.dataset_name, '*.png'))
         df = self._add_metadata(images_paths)
         return df
