@@ -1,2 +1,3 @@
 from preprocessors.preprocessor import Preprocessor
 from preprocessors.labeled_segments_creator.labaled_segments_creator import LabeledSegmentsCreator
+from preprocessors.labaled_superpixel_segments_creator.labaled_superpixel_segments_creator import SuperpixelSegmentsCreator

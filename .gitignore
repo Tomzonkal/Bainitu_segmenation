@@ -24,3 +24,6 @@ venv/
 *.swp
 .idea/
 .vscode/
+*.png
+*.jpg
+*.json
