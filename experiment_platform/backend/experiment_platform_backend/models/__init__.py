@@ -1,0 +1,1 @@
+from models.BaseModel.histogram_base_model import HistogramBaseModel
