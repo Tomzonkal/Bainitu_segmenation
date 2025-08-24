@@ -95,14 +95,6 @@ class HistogramBaseModel:
         Train the model using the prepared data.
         :return: Trained model.
         """ 
-        model = RandomForestClassifier(
-                n_estimators=self.n_estimators,
-                max_depth=self.max_depth,
-                min_samples_split=self.min_samples_split,
-                min_samples_leaf=self.min_samples_leaf,
-                max_features=self.max_features,
-                random_state=self.random_state
-            )
 
         skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
@@ -130,6 +122,14 @@ class HistogramBaseModel:
 
         y_true_all = np.array(y_true_all)
         y_pred_all = np.array(y_pred_all)
+        model=RandomForestClassifier(
+                n_estimators=self.n_estimators,
+                max_depth=self.max_depth,
+                min_samples_split=self.min_samples_split,
+                min_samples_leaf=self.min_samples_leaf,
+                max_features=self.max_features,
+                random_state=self.random_state
+            )
         self.model = model.fit(X, y)
         return self._validate(y_true_all, y_pred_all)           
 
