@@ -1,13 +1,14 @@
-class Optimiser:
+from logger import MLFlowLogger
+class Optimiser(MLFlowLogger):
     """
     A class to represent a generic optimiser.
     """
 
-    def __init__(self):
+    def __init__(self,*args,**kwargs):
         """
         Initializes the Optimiser instance.
         """
-        pass
+        super().__init__(*args,**kwargs)
 
     def optimise(self):
         """

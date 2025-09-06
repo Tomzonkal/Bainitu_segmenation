@@ -73,8 +73,6 @@ class HistogramBaseModel:
         :param y: Target vector.
         :return: Validation metrics.
         """
-        if self.model is None:
-            raise ValueError("Model is not trained yet. Please train the model before validation.")
         # Calculate metrics on combined predictions from all folds
         acc = accuracy_score(y, y_predict)
         prec = precision_score(y, y_predict, average='weighted', zero_division=0)
@@ -97,7 +95,7 @@ class HistogramBaseModel:
         """ 
 
         skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-
+        metric_dict={}
         y_true_all = []
         y_pred_all = []
 
@@ -116,6 +114,8 @@ class HistogramBaseModel:
             )
             model.fit(X_train, y_train)
             y_pred = model.predict(X_valid)
+            
+            metric_dict[f"set_{i}"],_,_=self._validate(y=y_valid,y_predict=y_pred)
 
             y_true_all.extend(y_valid)
             y_pred_all.extend(y_pred)
@@ -131,6 +131,7 @@ class HistogramBaseModel:
                 random_state=self.random_state
             )
         self.model = model.fit(X, y)
-        return self._validate(y_true_all, y_pred_all)           
+        metric_dict["avg_metric"], cm, labels=self._validate(y_true_all, y_pred_all)    
+        return metric_dict, cm, labels          
 
 

@@ -1,4 +1,6 @@
 import re
+import uuid
+from models import HistogramBaseModel
 from optimisers import Optimiser
 import optuna
 class OptunaOptimiser(Optimiser):
@@ -24,7 +26,7 @@ class OptunaOptimiser(Optimiser):
         return params
         
 
-    def __init__(self,model,input_dataset,n_trials=100,hyper_parameters=None,maximize=True,metric_name=None):
+    def __init__(self,model,input_dataset,n_trials=100,hyper_parameters=None,maximize=True,metric_name=None,experiment_name="DefaultExperiment"):
         """
         Initializes the OptunaOptimiser instance.
         """
@@ -34,10 +36,25 @@ class OptunaOptimiser(Optimiser):
         self.hyper_parameters = hyper_parameters or []
         self.maximize = maximize
         self.metric_name = metric_name
+        self.experiment_name = experiment_name+str(uuid.uuid4())
+        super().__init__(self.experiment_name)
         if not self.hyper_parameters:
             raise ValueError("Hyperparameters must be provided for optimisation.")
         if not self.metric_name:
             raise ValueError("Metric name must be provided for optimisation.")
+        
+        
+    def log_model_metrics(self, model,metrics):
+        """
+        Log model metrics for the experiment.
+        """
+        if type(model)is HistogramBaseModel:
+            metric_list = ["f1","accuracy","precision","recall"]
+            for metric in metrics.keys():
+                for metric_name in metric_list:
+                    self.log_metric(f"{metric}_{metric_name}",metrics[metric][metric_name]) 
+        else:
+            raise ValueError("Model must be a HistogramBaseModel.")
 
     def objective(self, trial):
         """
@@ -47,6 +64,9 @@ class OptunaOptimiser(Optimiser):
         It typically includes hyperparameter tuning and model evaluation.
         """
         params=self._produce_params(trial)
+        self.start_run(f"OptunaOptimiser {params}")
+        self.log_params(params)
+        self.iteration += 1
         # Set model parameters
         model=self.model(input_dataset=self.input_dataset, **params)
         # Fit the model and evaluate
@@ -55,7 +75,10 @@ class OptunaOptimiser(Optimiser):
         y=model.prepare_y()
 
         metric,_,_=model.train(X, y)
-        return metric[self.metric_name]
+        self.log_dict(metric, artifact_file=f"metric_{self.iteration}.json")
+        self.log_model_metrics(model,metric)
+        self.end_run()
+        return metric["avg_metric"][self.metric_name]
 
 
     def optimise(self):
