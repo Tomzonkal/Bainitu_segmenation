@@ -11,6 +11,7 @@ class SegmentDataset(Dataset):
         Initialize the ImageDataset class.
         """
         super().__init__(image_data_path=image_data_path, image_label_data_path=image_label_data_path,dataset_name = dataset_name)
+        self._ensure_dirs()
     def _add_label_infomration(self, df:pd.DataFrame):
         for index, row in df.iterrows():
             json_path = row['json_path']
@@ -19,7 +20,10 @@ class SegmentDataset(Dataset):
                     data = json.load(f)
                     df.at[index, 'label'] = data.get('label', None)
         return df
-        
+
+    def _ensure_dirs(self):
+        os.makedirs(os.path.join(self.image_data_path, self.dataset_name), exist_ok=True)
+        os.makedirs(os.path.join(self.image_label_data_path, self.dataset_name), exist_ok=True) 
     
     def _add_json_paths(self, images_paths,df):
         json_paths = glob.glob(os.path.join(self.image_label_data_path, self.dataset_name, '*.json'))

@@ -42,7 +42,10 @@ class HistogramBaseModel:
             hist= get_histograms(image, bins=self.bins)
             histograms.append(hist)
         return histograms
-            
+
+    def get_underlying_model(self):
+        return self.model
+               
     def prepare_X(self):
         """
         Prepare the feature matrix X from the histograms.

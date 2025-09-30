@@ -27,3 +27,5 @@ venv/
 *.png
 *.jpg
 *.json
+mlartifacts/
+mlruns/
