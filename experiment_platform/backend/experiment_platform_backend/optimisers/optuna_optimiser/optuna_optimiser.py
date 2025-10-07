@@ -47,11 +47,11 @@ class OptunaOptimiser(Optimiser):
         return params
         
 
-    def __init__(self, segment_creator: SuperpixelSegmentsCreator, n_trials=100,model_hyperparameters=None,slic_parameters=None,maximize=True,metric_name=None,experiment_name="DefaultExperiment"):
+    def __init__(self, src_segment_dataset: SegmentDataset, n_trials=100,model_hyperparameters=None,slic_parameters=None,maximize=True,metric_name=None,experiment_name="DefaultExperiment"):
         """
         Initializes the OptunaOptimiser instance.
         """
-        self.segment_creator = segment_creator
+        self.src_segment_dataset = src_segment_dataset
         self.n_trials = n_trials
         self.model_hyperparameters = model_hyperparameters or []
         self.slic_parameters = slic_parameters or []
@@ -76,6 +76,7 @@ class OptunaOptimiser(Optimiser):
         slic_out_dataset = SegmentDataset(dataset_name=dataset_name,
                                   image_data_path=config.SUPERPIXEL_BAINITE_SEGMENTS_DATASET_PATH,
                                   image_label_data_path=config.SUPERPIXEL_BAINITE_SEGMENTS_LABELS_DATASET_PATH)
+        self.segment_creator = SuperpixelSegmentsCreator(input_dataset=self.src_segment_dataset)
         self.segment_creator.create_segments(slic_parameters, slic_out_dataset) 
         self.post_slic_stats = self.segment_creator.get_post_slic_statistics() 
         self.slic_output_dataset = slic_out_dataset
@@ -122,25 +123,25 @@ class OptunaOptimiser(Optimiser):
         valid_segments = self.post_slic_stats["valid_segment_counter"]
         martensitic_segment_counter = self.post_slic_stats["martensitic_segment_counter"]
         bainitic_segment_counter = self.post_slic_stats["bainitic_segment_counter"]
-        if valid_segments < 200:
-            print(f"Valid segment counter is {valid_segments} Skipping trial.")
-            self.end_run()
-            return float("-inf") if self.maximize else float("inf")  # Force Optuna to discard this
+        self.log_params(self.post_slic_stats)
+        # if valid_segments < 20:
+        #     print(f"Valid segment counter is {valid_segments} Skipping trial.")
+        #     self.end_run()
+        #     return float("-inf") if self.maximize else float("inf")  # Force Optuna to discard this
         
-        if martensitic_segment_counter < 100:
-            print(f"martensitic_segment_counter segment counter is {martensitic_segment_counter} Skipping trial.")
-            self.end_run()
-            return float("-inf") if self.maximize else float("inf")  # Force Optuna to discard this
+        # if martensitic_segment_counter < 10:
+        #     print(f"martensitic_segment_counter segment counter is {martensitic_segment_counter} Skipping trial.")
+        #     self.end_run()
+        #     return float("-inf") if self.maximize else float("inf")  # Force Optuna to discard this
     
-        if bainitic_segment_counter < 100:
-            print(f"bainitic_segment_counter segment counter is {bainitic_segment_counter} Skipping trial.")
-            self.end_run()
-            return float("-inf") if self.maximize else float("inf")  # Force Optuna to discard this  
+        # if bainitic_segment_counter < 10:
+        #     print(f"bainitic_segment_counter segment counter is {bainitic_segment_counter} Skipping trial.")
+        #     self.end_run()
+        #     return float("-inf") if self.maximize else float("inf")  # Force Optuna to discard this  
     
         self.log_dict(metric, artifact_file=f"metric_{self.iteration}.json")
         # self.log_model_and_metrics(self.model, metric)
         self.log_metrics(metric)
-        self.log_params(self.post_slic_stats)
         mlflow.sklearn.log_model(self.model.get_underlying_model()) # TODO: analyze if its possible to maintain consistency with mlflow logger class
         self.end_run()
         return metric["avg_metric"][self.metric_name]

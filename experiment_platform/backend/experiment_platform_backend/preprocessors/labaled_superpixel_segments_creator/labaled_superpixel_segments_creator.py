@@ -5,7 +5,7 @@ import os
 from skimage.util import img_as_float
 from skimage.segmentation import slic
 from datasets.datasets import Dataset
-from datasets.generated_dataset import GeneratedDataset
+import matplotlib.pyplot as plt
 
 class SuperpixelSegmentsCreator:
     def __init__(self, input_dataset: Dataset, num_superpixels=None, pixels_per_superpixel=50000, compactness=0.1, min_cluster_size=500,sigma=1, start_label=1, channel_axis=None, min_mean_intensity=10):
@@ -18,10 +18,10 @@ class SuperpixelSegmentsCreator:
         self.start_label = start_label
         self.channel_axis = channel_axis
         self.min_mean_intensity = min_mean_intensity # minimal average pixel value (0-255 scal
-        self._skipped_segment_counter = None
-        self._valid_segment_counter = None
-        self._bainitic_segment_counter = None
-        self._martensitic_segment_counter = None
+        self._skipped_segment_counter = 0
+        self._valid_segment_counter = 0
+        self._bainitic_segment_counter = 0
+        self._martensitic_segment_counter = 0
         self.black_threshold = 10         # pixel values < 10 are black
         self.max_black_ratio = 0.9        # skip if > 90% pixels are black
 
@@ -49,12 +49,15 @@ class SuperpixelSegmentsCreator:
         # if len(xs) == 0 or len(ys) == 0:
         #     return None
         
-        if np.count_nonzero(masked_img) == 0:
-            print("Segment skipped: fully black",end=" - ")
+        # --- display using matplotlib ---
+        # plt.imshow(cropped)
+        # plt.show()
+        
+        if np.count_nonzero(cropped) == 0:
             return None
         
         # Skip small clusters
-        if len(xs) < self.min_cluster_size:
+        if self.min_cluster_size and len(xs) < self.min_cluster_size:
             print(f"Segment skipped: size {len(xs)} < min_cluster_size {self.min_cluster_size}", end=" - ")
             return None
 
@@ -77,7 +80,7 @@ class SuperpixelSegmentsCreator:
         :return: Mask as a numpy array.
         """
         base_name_clean = base_name.split('_')[0]
-        self.min_cluster_size=slic_parameters["min_cluster_size"]
+        self.min_cluster_size=slic_parameters.get("min_cluster_size", None)
 
         image = self._load_image(path)
         img_float, num_superpixels = self._image_preprocessing(image, slic_parameters)
@@ -100,17 +103,21 @@ class SuperpixelSegmentsCreator:
             if segment is not None:
                 if label == "bainite":
                     local_bainitic_segment_counter += 1
+                    print("Increased local_bainitic_segment_counter")
+                    
                 if label == "martensite":
                     local_martensitic_segment_counter += 1
+                    print("Increased local_martensitic_segment_counter")
+                    
+                print("Label correct:", label)
                 self._save_segment_image(base_name_clean, label, segment_iterator, segment, output_dataset)
                 self._save_segment_metadata(base_name_clean, label, segment_iterator, segment, output_dataset)
             else:
                 local_skipped_segment_counter += 1
-                print(f"{path} Skipped. Label: {label}")
-        self._skipped_segment_counter = local_skipped_segment_counter
-        self._bainitic_segment_counter = local_bainitic_segment_counter
-        self._martensitic_segment_counter = local_martensitic_segment_counter
-        self._valid_segment_counter = self._bainitic_segment_counter + self._martensitic_segment_counter
+        self._skipped_segment_counter += local_skipped_segment_counter
+        self._bainitic_segment_counter += local_bainitic_segment_counter
+        self._martensitic_segment_counter += local_martensitic_segment_counter
+        self._valid_segment_counter += local_bainitic_segment_counter + local_martensitic_segment_counter
 
 
     def get_post_slic_statistics(self):
@@ -181,7 +188,7 @@ class SuperpixelSegmentsCreator:
             json.dump(metadata, f, indent=4)
         
 
-    def create_segments(self, slic_parameters, output_dataset: GeneratedDataset):
+    def create_segments(self, slic_parameters, output_dataset: Dataset):
         metadata = self.input_dataset.load_meta_data()
         for _, row in metadata.iterrows():
             image_path = row['image_path']

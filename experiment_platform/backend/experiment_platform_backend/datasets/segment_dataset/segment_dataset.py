@@ -24,6 +24,7 @@ class SegmentDataset(Dataset):
     def _ensure_dirs(self):
         os.makedirs(os.path.join(self.image_data_path, self.dataset_name), exist_ok=True)
         os.makedirs(os.path.join(self.image_label_data_path, self.dataset_name), exist_ok=True) 
+        print("Created dir:", os.path.join(self.image_label_data_path, self.dataset_name))
     
     def _add_json_paths(self, images_paths,df):
         json_paths = glob.glob(os.path.join(self.image_label_data_path, self.dataset_name, '*.json'))
