@@ -135,7 +135,7 @@ class OptunaOptimiser(Optimiser):
         elif self.model_name == "ResNet50":
             self.prepare_resnet50_model(model_params)
         elif self.model_name == "efficientnet_b0":
-            self.prepare_resnet50_model(model_params)
+            self.prepare_efficientnet_b0_model(model_params)
 
         X=self.model.prepare_X()
         y=self.model.prepare_y()
