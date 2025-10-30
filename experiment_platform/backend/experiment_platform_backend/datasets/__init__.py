@@ -1,2 +1,3 @@
 from datasets.image_datatet.image_dataset import ImageDataset
 from datasets.segment_dataset.segment_dataset import SegmentDataset
+from datasets.torch_image_dataset import TorchImageDataset

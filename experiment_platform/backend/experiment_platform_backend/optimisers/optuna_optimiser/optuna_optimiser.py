@@ -1,15 +1,15 @@
 import re
 import uuid
-from models import HistogramBaseModel
+from models import HistogramBaseModel, ResNet50Model, EfficientNetB0
 from optimisers import Optimiser
-from preprocessors import SuperpixelSegmentsCreator
-from preprocessors import FelzenszwalbSegmentsCreator
+from preprocessors import SuperpixelSegmentsCreator, FelzenszwalbSegmentsCreator, WatershedSegmentsCreator
 from datasets import SegmentDataset
 import config
 import json
 import hashlib
 import optuna
 import mlflow.sklearn
+import mlflow.pytorch
 
 class OptunaOptimiser(Optimiser):
     """
@@ -48,11 +48,13 @@ class OptunaOptimiser(Optimiser):
         return params
         
 
-    def __init__(self, src_segment_dataset: SegmentDataset, segmentation, n_trials=100,model_hyperparameters=None,segmentation_parameters=None,maximize=True,metric_name=None,experiment_name="DefaultExperiment"):
+    def __init__(self, src_segment_dataset: SegmentDataset, model_name, segmentation, n_trials=100,model_hyperparameters=None,segmentation_parameters=None,maximize=True,metric_name=None,experiment_name="DefaultExperiment"):
         """
         Initializes the OptunaOptimiser instance.
         """
         self.src_segment_dataset = src_segment_dataset
+        self.model_name=model_name
+        self.model=None
         self.segmentation = segmentation
         self.n_trials = n_trials
         self.model_hyperparameters = model_hyperparameters or []
@@ -81,28 +83,36 @@ class OptunaOptimiser(Optimiser):
                                   image_label_data_path=config.SUPERPIXEL_BAINITE_SEGMENTS_LABELS_DATASET_PATH)
         if self.segmentation == "slic":
             self.segment_creator = SuperpixelSegmentsCreator(input_dataset=self.src_segment_dataset)
-        if self.segmentation == "felzenszwalb":
+        elif self.segmentation == "felzenszwalb":
             self.segment_creator = FelzenszwalbSegmentsCreator(input_dataset=self.src_segment_dataset)
+        elif self.segmentation == "watershed":
+            self.segment_creator = WatershedSegmentsCreator(input_dataset=self.src_segment_dataset)
         else:
-            raise ValueError("Segmentation must be slic or felzenszwalb")
+            raise ValueError("Segmentation must be slic, felzenszwalb or watershed")
         self.segment_creator.create_segments(segmentation_parameters, segmentation_out_dataset) 
         self.post_segmentation_stats = self.segment_creator.get_post_segmentation_statistics() 
         self.segmentation_output_dataset = segmentation_out_dataset
     
     def prepare_histogram_base_model(self, model_hyperparameters):
         self.model = HistogramBaseModel(input_dataset=self.segmentation_output_dataset, **model_hyperparameters)
-
+    
+    def prepare_resnet50_model(self, model_hyperparameters):
+        self.model = ResNet50Model(input_dataset=self.segmentation_output_dataset, **model_hyperparameters)
+        
+    def prepare_efficientnet_b0_model(self, model_hyperparameters):
+        self.model = EfficientNetB0(input_dataset=self.segmentation_output_dataset, **model_hyperparameters)
+        
     def log_metrics(self, metrics):
         """
         Log model metrics for the experiment.
         """
-        if type(self.model)is HistogramBaseModel:
-            metric_list = ["f1","accuracy","precision","recall"]
-            for metric in metrics.keys():
-                for metric_name in metric_list:
-                    self.log_metric(f"{metric}_{metric_name}",metrics[metric][metric_name]) 
-        else:
-            raise ValueError("Model must be a HistogramBaseModel.")
+        # if type(self.model)is HistogramBaseModel:
+        metric_list = ["f1","accuracy","precision","recall"]
+        for metric in metrics.keys():
+            for metric_name in metric_list:
+                self.log_metric(f"{metric}_{metric_name}",metrics[metric][metric_name]) 
+        # else:
+        #     raise ValueError("Model must be a HistogramBaseModel.")
 
     def objective(self, trial):
         """
@@ -120,7 +130,12 @@ class OptunaOptimiser(Optimiser):
         self.iteration += 1
 
         self.prepare_segments(segmentation_params)
-        self.prepare_histogram_base_model(model_params)
+        if self.model_name == "HistogramBaseModel":
+            self.prepare_histogram_base_model(model_params)
+        elif self.model_name == "ResNet50":
+            self.prepare_resnet50_model(model_params)
+        elif self.model_name == "efficientnet_b0":
+            self.prepare_resnet50_model(model_params)
 
         X=self.model.prepare_X()
         y=self.model.prepare_y()
@@ -150,7 +165,10 @@ class OptunaOptimiser(Optimiser):
         self.log_dict(metric, artifact_file=f"metric_{self.iteration}.json")
         # self.log_model_and_metrics(self.model, metric)
         self.log_metrics(metric)
-        mlflow.sklearn.log_model(self.model.get_underlying_model()) # TODO: analyze if its possible to maintain consistency with mlflow logger class
+        if self.model_name == "ResNet50" or self.model_name == "efficientnet_b0":
+            mlflow.pytorch.log_model(self.model.get_underlying_model()) # TODO: analyze if its possible to maintain consistency with mlflow logger class
+        if self.model_name == "HistogramBaseModel":
+            mlflow.sklearn.log_model(self.model.get_underlying_model()) # TODO: analyze if its possible to maintain consistency with mlflow logger class
         self.end_run()
         return metric["avg_metric"][self.metric_name]
 

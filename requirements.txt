@@ -26,6 +26,7 @@ filelock==3.18.0
 Flask==3.1.1
 flatbuffers==25.2.10
 fonttools==4.58.4
+fsspec==2025.9.0
 gdown==5.2.0
 gitdb==4.0.12
 GitPython==3.1.44
@@ -115,6 +116,8 @@ sympy==1.14.0
 threadpoolctl==3.6.0
 tifffile==2025.5.10
 tomli==2.2.1
+torch==2.9.0
+torchvision==0.24.0
 tornado==6.5.1
 tqdm==4.67.1
 traitlets==5.14.3

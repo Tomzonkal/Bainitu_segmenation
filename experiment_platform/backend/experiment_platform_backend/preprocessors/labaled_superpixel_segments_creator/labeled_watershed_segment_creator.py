@@ -3,26 +3,30 @@ import cv2
 import numpy as np
 import os
 from skimage.util import img_as_float
-from skimage.segmentation import felzenszwalb
+from skimage.segmentation import watershed
 from datasets.datasets import Dataset
 import matplotlib.pyplot as plt
 
 
-class FelzenszwalbSegmentsCreator:
+class WatershedSegmentsCreator:
     def __init__(
         self,
         input_dataset: Dataset,
-        scale_ratio=100,
-        min_size_ratio=1,
-        sigma=1,
-        channel_axis=None,
-        min_mean_intensity=10,
+        markers=None,
+        connectivity=1,
+        offset=None,
+        mask=None,
+        compactness=0,
+        watershed_line=False,
+        min_mean_intensity=10
     ):
         self.input_dataset = input_dataset
-        self.scale_ratio = scale_ratio
-        self.min_size_ratio = min_size_ratio
-        self.sigma = sigma
-        self.channel_axis = channel_axis
+        self.markers = markers
+        self.connectivity = connectivity
+        self.offset = offset
+        self.mask=mask
+        self.compactness = compactness
+        self.watershed_line = watershed_line
         self.min_mean_intensity = (
             min_mean_intensity  # minimal average pixel value (0-255 scal
         )
@@ -33,13 +37,11 @@ class FelzenszwalbSegmentsCreator:
         self.black_threshold = 10  # pixel values < 10 are black
         self.max_black_ratio = 0.9  # skip if > 90% pixels are black
 
-    def _image_preprocessing(self, image, felzenszwalb_parameters):
+    def _image_preprocessing(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         # Convert to float for segmentation (values between 0 and 1) TODO ???
         img_float = img_as_float(gray)
         h, w = img_float.shape[:2]
-
-        # scale = felzenszwalb_parameters["scale_ratio"] * num_pixels
 
         return img_float
 
@@ -74,7 +76,7 @@ class FelzenszwalbSegmentsCreator:
         return cropped
 
     def _create_super_pixel_segments(
-        self, label, felzenszwalb_parameters, path, base_name, output_dataset
+        self, label, watershed_parameters, path, base_name, output_dataset
     ):
         """
         Create a mask from the given points.
@@ -85,13 +87,10 @@ class FelzenszwalbSegmentsCreator:
         base_name_clean = base_name.split("_")[0]
 
         image = self._load_image(path)
-        img_float = self._image_preprocessing(image, felzenszwalb_parameters)
-        segments = felzenszwalb(
+        img_float = self._image_preprocessing(image)
+        segments = watershed(
             img_float,
-            scale=felzenszwalb_parameters["scale"],
-            sigma=felzenszwalb_parameters["sigma"],
-            min_size=felzenszwalb_parameters["min_size"],
-            channel_axis=self.channel_axis,
+            compactness=watershed_parameters["connectivity"],
         )
 
         local_skipped_segment_counter = 0
