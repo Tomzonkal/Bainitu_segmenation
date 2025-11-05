@@ -1,6 +1,6 @@
 import re
 import uuid
-from models import HistogramBaseModel, ResNet50Model, EfficientNetB0
+from models import HistogramBaseModel, ResNet50Model, EfficientNetB0, CustomGrayCNN
 from optimisers import Optimiser
 from preprocessors import SuperpixelSegmentsCreator, FelzenszwalbSegmentsCreator, WatershedSegmentsCreator
 from datasets import SegmentDataset
@@ -102,6 +102,9 @@ class OptunaOptimiser(Optimiser):
     def prepare_efficientnet_b0_model(self, model_hyperparameters):
         self.model = EfficientNetB0(input_dataset=self.segmentation_output_dataset, **model_hyperparameters)
         
+    def prepare_custom_cnn_model(self, model_hyperparameters):
+        self.model = CustomGrayCNN(input_dataset=self.segmentation_output_dataset, **model_hyperparameters)
+
     def log_metrics(self, metrics):
         """
         Log model metrics for the experiment.
@@ -136,6 +139,8 @@ class OptunaOptimiser(Optimiser):
             self.prepare_resnet50_model(model_params)
         elif self.model_name == "efficientnet_b0":
             self.prepare_efficientnet_b0_model(model_params)
+        elif self.model_name == "custom_cnn":
+            self.prepare_custom_cnn_model(model_params)
 
         X=self.model.prepare_X()
         y=self.model.prepare_y()
