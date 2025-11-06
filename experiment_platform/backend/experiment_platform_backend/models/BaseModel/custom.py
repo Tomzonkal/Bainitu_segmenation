@@ -19,6 +19,7 @@ class CustomGrayCNN(ResNet50Model):
         self.random_state = random_state
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = None
+        print("Using device:", self.device)
 
 def _build_model(self, num_classes, input_size=(224, 224)):
     # Convolutional backbone

@@ -22,6 +22,7 @@ class EfficientNetB0(ResNet50Model):
         self.random_state = random_state
         self.model = None
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print("Using device:", self.device)
 
     def train(self, X, y):
         """
@@ -92,7 +93,7 @@ class EfficientNetB0(ResNet50Model):
         print("\nTraining final model on full dataset...")
         final_loader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
 
-        self.model = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.IMAGENET1K_V2)
+        self.model = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.IMAGENET1K_V1)
         for param in self.model.parameters():
             param.requires_grad = False
         self.model.classifier[1] = nn.Linear(self.model.classifier[1].in_features, len(np.unique(y)))
