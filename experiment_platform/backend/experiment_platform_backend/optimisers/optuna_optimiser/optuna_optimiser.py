@@ -10,6 +10,8 @@ import hashlib
 import optuna
 import mlflow.sklearn
 import mlflow.pytorch
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
 
 class OptunaOptimiser(Optimiser):
     """
@@ -189,3 +191,68 @@ class OptunaOptimiser(Optimiser):
         print("Best hyperparameters:", study.best_params)
         print("Best accuracy:", study.best_value)
         return study.best_params, study.best_value
+
+    def predict_on_test_dataset(self, test_dataset: SegmentDataset, model_path: str, segmentation_params):
+        # best_params = self.study.best_params
+        # model_params = {
+        #     k: best_params[k]
+        #     for k in best_params.keys()
+        #     if k in self.model_hyperparameters.keys()
+        # }
+        # segmentation_params = {
+        #     k: best_params[k]
+        #     for k in best_params.keys()
+        #     if k in self.segmentation_parameters.keys()
+        # }
+
+        
+        self.prepare_segments(segmentation_params)
+        
+        # Rebuild model architecture wrapper
+        if self.model_name == "HistogramBaseModel":
+            self.prepare_histogram_base_model(self.model_hyperparameters)
+            underlying_model = mlflow.sklearn.load_model(model_path)
+        else:
+            raise ValueError(f"Unsupported model name: {self.model_name}")
+
+        # Inject the loaded model weights into the wrapper
+        self.model.set_underlying_model(underlying_model)
+        
+        # Prepare segments for test dataset (same segmentation settings)
+        
+
+        # Prepare features and labels
+        X_test = self.model.prepare_X()
+        y_test = self.model.prepare_y()
+        
+        print("Len of x:", len(X_test))
+        print("Len of y:", len(y_test))
+        
+        # Generate predictions
+        print("🚀 Running inference on test dataset...")
+        predictions = self.model.get_underlying_model().predict(X_test)
+
+        # Run prediction and evaluation -- evaluate is for tocrch
+        # metrics, predictions, confusion_matrix = self.model.get_underlying_model().evaluate(X_test, y_test)
+        accuracy = accuracy_score(y_test, predictions)
+        cm = confusion_matrix(y_test, predictions)
+        report = classification_report(y_test, predictions)
+
+        print("Accuracy:", accuracy)
+        print("Confusion Matrix:\n", cm)
+        print("Classification Report:\n", report)
+
+        # # Optionally compute confusion matrix
+        # if hasattr(self.model, "compute_confusion_matrix"):
+        #     confusion_matrix = self.model.compute_confusion_matrix(y_test, predictions)
+        # else:
+        #     confusion_matrix = None
+
+        # # Log and return
+        # self.start_run("Test Prediction Run")
+        # self.log_dict(metrics, artifact_file="test_metrics.json")
+        # self.log_dict(confusion_matrix, artifact_file="confusion_matrix.json")
+        # self.log_metrics(metrics)
+        # self.end_run()
+
+        print("✅ Test dataset evaluation completed.")

@@ -45,6 +45,9 @@ class HistogramBaseModel:
 
     def get_underlying_model(self):
         return self.model
+    
+    def set_underlying_model(self, model):
+        self.model = model
                
     def prepare_X(self):
         """

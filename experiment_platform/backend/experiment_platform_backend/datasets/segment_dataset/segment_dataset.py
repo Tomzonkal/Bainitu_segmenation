@@ -28,10 +28,12 @@ class SegmentDataset(Dataset):
     
     def _add_json_paths(self, images_paths,df):
         json_paths = glob.glob(os.path.join(self.image_label_data_path, self.dataset_name, '*.json'))
+        print("Found JSONs:", json_paths)
         df['json_path'] = None
         for image_path in images_paths:
             base_name = os.path.splitext(os.path.basename(image_path))[0]
-            json_path = os.path.join(self.image_label_data_path,self.dataset_name, base_name + '.json')
+            json_path = os.path.join(self.image_label_data_path, self.dataset_name, base_name + '.json')
+            print("Looking for:", json_path)
             df.loc[df['image_path'] == image_path, 'json_path'] = json_path if json_path in json_paths else None
         return df
             
