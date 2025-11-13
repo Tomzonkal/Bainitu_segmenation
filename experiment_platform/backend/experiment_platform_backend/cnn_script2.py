@@ -35,7 +35,6 @@ slic_parameters = {
         "sigma" : {'type' : 'float', 'min' : 1, 'max' : 1.4}
 }
 
-# mlflow.end_run()
-optuna_optimiser= OptunaOptimiser(src_segment_dataset=segment_dataset, model_name="ResNet50", segmentation="slic", n_trials=50,
-                                   model_hyperparameters=model_parameters, segmentation_parameters = slic_parameters, maximize=True, metric_name='f1', experiment_name="transferlearning_ResNet50")
+optuna_optimiser= OptunaOptimiser(src_segment_dataset=segment_dataset, model_name="efficientnet_b0", segmentation="slic", n_trials=50,
+                                   model_hyperparameters=model_parameters, segmentation_parameters = slic_parameters, maximize=True, metric_name='f1', experiment_name="efficientnet_b0_scratch")
 optuna_optimiser.optimise()

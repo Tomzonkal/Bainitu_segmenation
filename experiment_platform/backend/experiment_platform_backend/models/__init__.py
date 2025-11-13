@@ -2,3 +2,4 @@ from models.BaseModel.histogram_base_model import HistogramBaseModel
 from models.BaseModel.resnet_50 import ResNet50Model
 from models.BaseModel.efficient_net_b0 import EfficientNetB0
 from models.BaseModel.custom import CustomGrayCNN
+from models.BaseModel.custom_1 import Custom1LayerGrayCNN
