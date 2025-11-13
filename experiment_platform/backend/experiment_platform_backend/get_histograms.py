@@ -33,7 +33,7 @@ def get_histograms(segment_dir = "slic_out", bins=256):
         gray_values = (0.114 * img[:, :, 0] + 0.587 * img[:, :, 1] + 0.299 * img[:, :, 2]).astype(np.uint8).flatten()
 
         # Compute histogram TODO: optimize bin number
-        hist, _ = np.histogram(gray_values, bins=bins, range=(0, bins))
+        hist, _ = np.histogram(gray_values, bins=bins)
 
         # Normalize histogram
         hist = hist.astype('float32') / hist.sum()
