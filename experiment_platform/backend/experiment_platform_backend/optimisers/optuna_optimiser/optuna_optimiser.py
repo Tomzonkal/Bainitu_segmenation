@@ -2,7 +2,7 @@ import re
 import uuid
 from models import HistogramBaseModel, ResNet50Model, EfficientNetB0, CustomGrayCNN, Custom1LayerGrayCNN
 from optimisers import Optimiser
-from preprocessors import SuperpixelSegmentsCreator, FelzenszwalbSegmentsCreator, WatershedSegmentsCreator
+from preprocessors import SuperpixelSegmentsCreator, FelzenszwalbSegmentsCreator, WatershedSegmentsCreator, GridSegmentsCreator
 from datasets import SegmentDataset
 import config
 import json
@@ -89,9 +89,13 @@ class OptunaOptimiser(Optimiser):
             self.segment_creator = FelzenszwalbSegmentsCreator(input_dataset=self.src_segment_dataset)
         elif self.segmentation == "watershed":
             self.segment_creator = WatershedSegmentsCreator(input_dataset=self.src_segment_dataset)
+        elif self.segmentation == "grid":
+            self.segment_creator = GridSegmentsCreator(input_dataset=self.src_segment_dataset)
+            print("Debug: segment creator set to grid")
         else:
-            raise ValueError("Segmentation must be slic, felzenszwalb or watershed")
+            raise ValueError("Segmentation must be slic, felzenszwalb, watershed or grid")
         self.segment_creator.create_segments(segmentation_parameters, segmentation_out_dataset) 
+        print("Debug: segment creation done")
         self.post_segmentation_stats = self.segment_creator.get_post_segmentation_statistics() 
         self.segmentation_output_dataset = segmentation_out_dataset
     
