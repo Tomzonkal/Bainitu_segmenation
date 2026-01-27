@@ -10,7 +10,8 @@ import hashlib
 import optuna
 import mlflow.sklearn
 import mlflow.pytorch
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
 
 
 class OptunaOptimiser(Optimiser):
@@ -157,12 +158,21 @@ class OptunaOptimiser(Optimiser):
         y=self.model.prepare_y()
 
         #try:
-        metric,_,_=self.model.train(X, y)
+        metric,cm,_=self.model.train(X, y)
         #except ValueError: # TODO: what to do? think about it
         valid_segments = self.post_segmentation_stats["valid_segment_counter"]
         martensitic_segment_counter = self.post_segmentation_stats["martensitic_segment_counter"]
         bainitic_segment_counter = self.post_segmentation_stats["bainitic_segment_counter"]
         self.log_params(self.post_segmentation_stats)
+
+        disp = ConfusionMatrixDisplay(cm)
+        disp.plot()
+
+        plt.tight_layout()
+        plt.savefig("confusion_matrix.png")
+        plt.close()
+
+        self.log_artifact("confusion_matrix.png")
         if valid_segments < 50:
             print(f"Valid segment counter is {valid_segments} Skipping trial.")
             self.end_run()

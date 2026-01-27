@@ -84,13 +84,25 @@ class HistogramBaseModel:
         prec = precision_score(y, y_predict, average='weighted', zero_division=0)
         rec = recall_score(y, y_predict, average='weighted', zero_division=0)
         f1 = f1_score(y, y_predict, average='weighted', zero_division=0)
+
         labels = np.unique(y)
         cm = confusion_matrix(y, y_predict  , labels=labels)
+        
+        # Per-class accuracy: correct predictions / total samples per class
+        class_totals = cm.sum(axis=1)
+        accuracy_per_class = np.divide(
+            np.diag(cm),
+            class_totals,
+            out=np.zeros_like(class_totals, dtype=float),
+            where=class_totals != 0
+        )
+        
         metrics = {
             "accuracy": acc,
             "precision": prec,
             "recall": rec,
             "f1": f1,
+            "accuracy_per_class": dict(zip(labels, accuracy_per_class))
         }
         return metrics, cm, labels
 
