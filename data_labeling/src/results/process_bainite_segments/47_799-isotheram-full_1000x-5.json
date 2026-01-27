@@ -1,0 +1,10 @@
+{
+    "base_name": "47_799-isotheram-full_1000x-5",
+    "label": "upper_bainite",
+    "iterator": 999,
+    "segment_shape": [
+        1600,
+        1200,
+        1
+    ]
+}
