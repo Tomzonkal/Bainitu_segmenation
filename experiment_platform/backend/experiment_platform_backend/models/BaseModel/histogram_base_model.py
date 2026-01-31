@@ -58,8 +58,9 @@ class HistogramBaseModel:
         input_dataset = self.input_dataset.load_meta_data()
         segments_paths= input_dataset['image_path'].tolist()
         histograms = self._create_histograms(segments_paths)
+        process_data = self.get_process_data()
         X = np.array(histograms)
-        return X
+        return X, process_data
 
     def prepare_y(self):
         """

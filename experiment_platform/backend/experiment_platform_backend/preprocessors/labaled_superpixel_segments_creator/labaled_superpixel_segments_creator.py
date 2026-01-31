@@ -22,6 +22,7 @@ class SuperpixelSegmentsCreator:
         self._valid_segment_counter = 0
         self._bainitic_segment_counter = 0
         self._martensitic_segment_counter = 0
+        self._upper_bainite_segment_counter = 0
         self.black_threshold = 10         # pixel values < 10 are black
         self.max_black_ratio = 0.9        # skip if > 90% pixels are black
 
@@ -94,7 +95,7 @@ class SuperpixelSegmentsCreator:
         )
 
         local_skipped_segment_counter = 0
-        local_valid_segment_counter = 0
+        local_upper_bainitic_segment_counter = 0
         local_bainitic_segment_counter = 0
         local_martensitic_segment_counter = 0
         for segment_iterator, sp_label in enumerate(np.unique(segments)):
@@ -104,10 +105,12 @@ class SuperpixelSegmentsCreator:
                 if label == "bainite":
                     local_bainitic_segment_counter += 1
                     print("Increased local_bainitic_segment_counter")
-                    
                 if label == "martensite":
                     local_martensitic_segment_counter += 1
                     print("Increased local_martensitic_segment_counter")
+                if label == "upper_bainite":
+                    local_upper_bainitic_segment_counter += 1
+                    print("Increased local_upper_bainitic_segment_counter")       
                     
                 print("Label correct:", label)
                 self._save_segment_image(base_name_clean, label, segment_iterator, segment, output_dataset)
@@ -117,7 +120,8 @@ class SuperpixelSegmentsCreator:
         self._skipped_segment_counter += local_skipped_segment_counter
         self._bainitic_segment_counter += local_bainitic_segment_counter
         self._martensitic_segment_counter += local_martensitic_segment_counter
-        self._valid_segment_counter += local_bainitic_segment_counter + local_martensitic_segment_counter
+        self._upper_bainite_segment_counter += local_upper_bainitic_segment_counter
+        self._valid_segment_counter += local_bainitic_segment_counter + local_martensitic_segment_counter + local_upper_bainitic_segment_counter
 
 
     def get_post_segmentation_statistics(self):
@@ -125,6 +129,7 @@ class SuperpixelSegmentsCreator:
             "skipped_segment_counter": self._skipped_segment_counter,
             "bainitic_segment_counter": self._bainitic_segment_counter,
             "martensitic_segment_counter": self._martensitic_segment_counter,
+            "upper_bainite_segment_counter": self._upper_bainite_counter,
             "valid_segment_counter": self._valid_segment_counter,
         }
 
