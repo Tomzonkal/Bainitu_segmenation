@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xml:base="http://example.org/lm_microstructure_physics.owl"
+         xmlns="http://example.org/lm_microstructure_physics.owl#">
+
+<owl:Ontology rdf:about="http://example.org/lm_microstructure_physics.owl"/>
+
+<owl:ObjectProperty rdf:about="#allowedPhase">
+  <rdfs:domain rdf:resource="#HeatTreatmentProcess"/>
+  <rdfs:range rdf:resource="#MicrostructurePhase"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#suppressedPhase">
+  <rdfs:domain rdf:resource="#SampleGeometry"/>
+  <rdfs:range rdf:resource="#MicrostructurePhase"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#contradicts">
+  <rdfs:domain rdf:resource="#MicrostructurePhase"/>
+  <rdfs:range rdf:resource="#MicrostructurePhase"/>
+</owl:ObjectProperty>
+
+<owl:Class rdf:about="#HeatTreatmentProcess">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#SampleGeometry">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#MicrostructurePhase">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#MetallurgicalRule">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#IsothermalHold">
+  <rdfs:subClassOf>
+    <owl:Restriction>
+      <owl:someValuesFrom rdf:resource="#LowerBainite"/>
+      <owl:onProperty rdf:resource="#allowedPhase"/>
+    </owl:Restriction>
+  </rdfs:subClassOf>
+  <rdfs:subClassOf>
+    <owl:Restriction>
+      <owl:someValuesFrom rdf:resource="#UpperBainite"/>
+      <owl:onProperty rdf:resource="#allowedPhase"/>
+    </owl:Restriction>
+  </rdfs:subClassOf>
+  <rdfs:subClassOf rdf:resource="#HeatTreatmentProcess"/>
+</owl:Class>
+
+<owl:Class rdf:about="#DirectQuenching">
+  <rdfs:subClassOf>
+    <owl:Restriction>
+      <owl:someValuesFrom rdf:resource="#Martensite"/>
+      <owl:onProperty rdf:resource="#allowedPhase"/>
+    </owl:Restriction>
+  </rdfs:subClassOf>
+  <rdfs:subClassOf>
+    <owl:Restriction>
+      <owl:someValuesFrom rdf:resource="#LowerBainite"/>
+      <owl:onProperty rdf:resource="#allowedPhase"/>
+    </owl:Restriction>
+  </rdfs:subClassOf>
+  <rdfs:subClassOf rdf:resource="#HeatTreatmentProcess"/>
+</owl:Class>
+
+<owl:Class rdf:about="#FullSample">
+  <rdfs:subClassOf rdf:resource="#SampleGeometry"/>
+</owl:Class>
+
+<owl:Class rdf:about="#HollowSample">
+  <rdfs:subClassOf>
+    <owl:Restriction>
+      <owl:someValuesFrom rdf:resource="#LowerBainite"/>
+      <owl:onProperty rdf:resource="#suppressedPhase"/>
+    </owl:Restriction>
+  </rdfs:subClassOf>
+  <rdfs:subClassOf>
+    <owl:Restriction>
+      <owl:someValuesFrom rdf:resource="#UpperBainite"/>
+      <owl:onProperty rdf:resource="#suppressedPhase"/>
+    </owl:Restriction>
+  </rdfs:subClassOf>
+  <rdfs:subClassOf rdf:resource="#SampleGeometry"/>
+</owl:Class>
+
+<owl:Class rdf:about="#UpperBainite">
+  <rdfs:subClassOf>
+    <owl:Restriction>
+      <owl:someValuesFrom rdf:resource="#Martensite"/>
+      <owl:onProperty rdf:resource="#contradicts"/>
+    </owl:Restriction>
+  </rdfs:subClassOf>
+  <rdfs:subClassOf rdf:resource="#MicrostructurePhase"/>
+</owl:Class>
+
+<owl:Class rdf:about="#LowerBainite">
+  <rdfs:subClassOf rdf:resource="#MicrostructurePhase"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Martensite">
+  <rdfs:subClassOf>
+    <owl:Restriction>
+      <owl:someValuesFrom rdf:resource="#UpperBainite"/>
+      <owl:onProperty rdf:resource="#contradicts"/>
+    </owl:Restriction>
+  </rdfs:subClassOf>
+  <rdfs:subClassOf rdf:resource="#MicrostructurePhase"/>
+</owl:Class>
+
+
+</rdf:RDF>
